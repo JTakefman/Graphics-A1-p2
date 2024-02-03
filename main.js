@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { GUI } from "dat.gui";
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -13,11 +15,6 @@ scene.add(axes);
 var rabbitGroup = new THREE.Group();
 scene.add(rabbitGroup);
 
-const phiStart = 0;
-const phiEnd = Math.PI * 2;
-const thetaStart = 0;
-const thetaEnd = Math.PI / 2;
-
 const bodyMaterial = new THREE.MeshBasicMaterial( { color: 0xFFA500 } );
 var bodyGeometry = new THREE.CylinderGeometry(1,1,5,32)
 var bodyCylinder = new THREE.Mesh(bodyGeometry, bodyMaterial);
@@ -28,15 +25,43 @@ rabbitGroup.add(bodyCylinder);
 var bodyGroup = new THREE.Group();
 rabbitGroup.add(bodyGroup);
 
-const geometry = new THREE.SphereGeometry( 1, 32, 16, phiStart, phiEnd, thetaStart, thetaEnd );
+
+const phiStart = 0;
+const phiEnd = Math.PI * 2;
+const thetaStart = 0;
+const thetaEnd = Math.PI / 2;
+
+
+//Define the neck and head
+const neckGeometry = new THREE.SphereGeometry( 1, 32, 16, phiStart, phiEnd, thetaStart, thetaEnd );
 const material = new THREE.MeshBasicMaterial( { color: 0xFFA500} );
-var neck = new THREE.Mesh( geometry, material );
+var neck = new THREE.Mesh( neckGeometry, material );
 neck.position.set(-2.5,0,0);
 neck.rotateZ(THREE.MathUtils.degToRad(90))
 bodyGroup.add(neck);
 
-rabbitGroup.position.set(0,0,0);
+const headGeometry = new THREE.SphereGeometry( 1,100, 16);
+const headMaterial = new THREE.MeshBasicMaterial( { color: 0x173AFF} );
+headGeometry.scale(1.5,1,1)
+var head = new THREE.Mesh(headGeometry, material);
+head.position.set(-4,1.5,0);
+rabbitGroup.add(head);
 
+var headGroup = new THREE.Group();
+rabbitGroup.add(headGroup);
+headGroup.position.set(-4,1.5,0);
+
+
+//Define the ears
+const earMaterial = new THREE.MeshBasicMaterial( { color: 0xFFFFFF } );
+var earGeometry = new THREE.CylinderGeometry(.25,0.25,1,32);
+var ear1 = new THREE.Mesh(earGeometry, earMaterial);
+var ear2 = new THREE.Mesh(earGeometry, earMaterial);
+ear1.position.set(0.2,1,0.5);
+ear2.position.set(0.2,1,-0.5);
+headGroup.add(ear1, ear2);
+
+//Define the legs
 var flegGroup = new THREE.Group();
 bodyGroup.add(flegGroup);
 var flegFoot = new THREE.Group();
@@ -64,12 +89,26 @@ rlegGroup.position.set(1,-1,0);
 rlegGroup.rotateZ(THREE.MathUtils.degToRad(35))
 
 
+const controls = new OrbitControls(camera, renderer.domElement);
 camera.position.set(0,0,5);
 camera.lookAt(scene.position);
+rabbitGroup.position.set(1,2,-4);
+/*
+var controls = new (function () {
 
+	this.pointCamera = function() {
+
+	}
+})();
+var gui= new GUI();
+gui.add(parameters, "cam_x", 0, 20);
+gui.add(parameters, "cam_y", 0, 20);
+gui.add(parameters, "cam_z", 0, 20);
+*/
 
 function animate() {
 	requestAnimationFrame( animate );
+	controls.update();
 	renderer.render( scene, camera );
 }
 
