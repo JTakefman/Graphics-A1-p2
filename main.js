@@ -41,7 +41,6 @@ neck.rotateZ(THREE.MathUtils.degToRad(90))
 bodyGroup.add(neck);
 
 const headGeometry = new THREE.SphereGeometry( 1,100, 16);
-const headMaterial = new THREE.MeshBasicMaterial( { color: 0x173AFF} );
 headGeometry.scale(1.5,1,1)
 var head = new THREE.Mesh(headGeometry, material);
 head.position.set(-4,1.5,0);
@@ -77,39 +76,62 @@ const frontFootMaterial = new THREE.MeshBasicMaterial( { color: 0xFF00FF} );
 var frontFoot = new THREE.Mesh( frontFootGeometry, frontFootMaterial );
 flegFoot.add(frontFoot);
 frontFoot.position.set(0,1,0);
-flegGroup.rotateZ(THREE.MathUtils.degToRad(180));
 
 var rlegGroup = flegGroup.clone();
 bodyGroup.add(rlegGroup);
 
 flegGroup.position.set(-1,-1,0)
-flegGroup.rotateZ(THREE.MathUtils.degToRad(-35))
+flegGroup.rotateZ(THREE.MathUtils.degToRad(145))
 
 rlegGroup.position.set(1,-1,0);
-rlegGroup.rotateZ(THREE.MathUtils.degToRad(35))
+rlegGroup.rotateZ(THREE.MathUtils.degToRad(205))
 
+const lookAtPointGeometry = new THREE.SphereGeometry( 0.25,100, 16);
+const lookAtMaterial = new THREE.MeshBasicMaterial({color: 0x0BDA51})
+var lookAtPoint = new THREE.Mesh(lookAtPointGeometry, lookAtMaterial);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-camera.position.set(0,0,5);
-camera.lookAt(scene.position);
-rabbitGroup.position.set(1,2,-4);
-/*
-var controls = new (function () {
+scene.add(lookAtPoint);
+lookAtPoint.position.set(0,0,0);
 
-	this.pointCamera = function() {
+let orbitData = {radius:0.0, hAngle:0.0, vAngle:0.0};
 
-	}
-})();
 var gui= new GUI();
-gui.add(parameters, "cam_x", 0, 20);
-gui.add(parameters, "cam_y", 0, 20);
-gui.add(parameters, "cam_z", 0, 20);
-*/
+gui.add(flegGroup.rotation, "z", THREE.MathUtils.degToRad(145), THREE.MathUtils.degToRad(205)).name("Rotate front leg");
+gui.add(rlegGroup.rotation, "z", THREE.MathUtils.degToRad(145), THREE.MathUtils.degToRad(205)).name("Rotate front leg");
+gui.add(lookAtPoint.position, "x", -10, 10).name("LookAtX");
+gui.add(lookAtPoint.position, "y", -10, 10).name("LookAtY");
+gui.add(lookAtPoint.position, "z", -10, 10).name("LookAtZ");
+gui.add(orbitData, "radius", 0, 10);
+gui.add(orbitData, "hAngle", 0, 360);
+gui.add(orbitData, "vAngle", 0, 360);
+
+//const orbit = new OrbitControls(camera, renderer.domElement);
+camera.position.set(0,0,5);
+camera.lookAt(lookAtPoint.position);
+rabbitGroup.position.set(0,0,0);
 
 function animate() {
 	requestAnimationFrame( animate );
-	controls.update();
 	renderer.render( scene, camera );
+
+	var yAxis = new THREE.Vector3(0,1,0);
+	var xAxis = new THREE.Vector3(1,0,0);
+
+	var cameraOverwatch = new THREE.Vector3(0,0,orbitData.radius);
+	
+	cameraOverwatch.applyAxisAngle(xAxis, THREE.MathUtils.degToRad(orbitData.vAngle))
+	cameraOverwatch.applyAxisAngle(yAxis, THREE.MathUtils.degToRad(orbitData.hAngle))
+
+	var lookAtPos = new THREE.Vector3();
+	lookAtPoint.getWorldPosition(lookAtPos);
+
+	cameraOverwatch.setX(cameraOverwatch.x+lookAtPos.x);
+	cameraOverwatch.setY(cameraOverwatch.y+lookAtPos.y);
+	cameraOverwatch.setZ(cameraOverwatch.z+lookAtPos.z);
+	console.log("test");
+
+	camera.position.set(cameraOverwatch.x, cameraOverwatch.y, cameraOverwatch.z);
+	camera.lookAt(lookAtPoint.position);
 }
 
 animate();
